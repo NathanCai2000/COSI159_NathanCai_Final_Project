@@ -25,6 +25,7 @@ class Trainer:
             epochs: int,
             lr: float,
             save_dir: str,
+            name: str,
     ) -> None:
         """ Model training, TODO: consider adding model evaluation into the training loop """
 
@@ -52,7 +53,7 @@ class Trainer:
         print("Training completed, saving model to %s" % save_dir)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        torch.save(self._model.state_dict(), os.path.join(save_dir, "mnist.pth"))
+        torch.save(self._model.state_dict(), os.path.join(save_dir, name + ".pth"))
 
         return
 
@@ -93,7 +94,7 @@ class Trainer:
         fig
         
         # prints out the associated classes for each sample
-        print(output.data.max(1, keepdim=True)[1][:])
+        #print(output.data.max(1, keepdim=True)[1][:])
         return 
 
     def load_model(self, path: str) -> None:

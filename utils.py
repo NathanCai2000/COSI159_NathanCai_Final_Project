@@ -16,3 +16,5 @@ class AverageMeter:
         self.count += n
         if self.count > 0:
             self.avg = self.sum / self.count
+            
+    

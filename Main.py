@@ -2,16 +2,18 @@ import argparse
 
 import torch
 import torchvision
+import os
 
 from model import Net
 from train import Trainer
+import Gen_Mod as GM
 
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='mnist classification')
+    parser = argparse.ArgumentParser(description='Domain Impression')
     parser.add_argument('--epochs', type=int, default=10, help="training epochs")
     parser.add_argument('--lr', type=float, default=1e-1, help="learning rate")
-    parser.add_argument('--bs', type=int, default=64, help="batch size")
+    parser.add_argument('--bs', type=int, default=100, help="batch size")
     args = parser.parse_args()
 
     return args
@@ -19,52 +21,42 @@ def parse_args():
 
 def main():
     args = parse_args()
-
     # model
-    model = Net()
+    model_source = Net()
 
-    # datasets
+    # trainer
+    trainer = Trainer(model=model_source)
+    '''
+    print("Loading Data for Source Domain: SVHN")
+    # source datasets
     transform = torchvision.transforms.Compose([
+        torchvision.transforms.Resize([28, 28]),
+        torchvision.transforms.Grayscale(),
         torchvision.transforms.ToTensor(),
         torchvision.transforms.Normalize((0.1307,), (0.3081,))
     ])
-    train_loader = torch.utils.data.DataLoader(
-        torchvision.datasets.MNIST(root='./data/', train=True, download=True, transform=transform),
+    train_source = torch.utils.data.DataLoader(
+        torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform),
         batch_size=args.bs,
         shuffle=True,
     )
-    test_loader = torch.utils.data.DataLoader(
-        torchvision.datasets.MNIST(root='./data/', train=False, download=True, transform=transform),
+    test_source = torch.utils.data.DataLoader(
+        torchvision.datasets.SVHN(root='./data/', split='test', download=True, transform=transform),
         batch_size=args.bs,
         shuffle=False,
     )
-
-    # trainer
-    trainer = Trainer(model=model)
+    '''
+    # loads the source model
+    print("Loading Source Model")
+    trainer.load_model(os.path.join("./save/", "SVHN.pth"))
+    model_source = trainer._model
     
-    # model import and test
-    """
-    import os
-    # loads the model again and then evaluate itself again (Should have same scores)
-    trainer.load_model(os.path.join("./save/", "mnist.pth"))
-    trainer.eval(test_loader=test_loader)
-    """
-
-    # model training
-    trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/")
-
-    # model evaluation
-    trainer.eval(test_loader=test_loader)
-
-    # util that loads the test data for use as the samples for testing model inference
-    examples = enumerate(test_loader)
-    tmp, (example_data, example_targets) = next(examples)
-    example_data.shape
+    GAN_s = GM.Generator().cuda
+    maker = GM.Source_gen(source_model=model_source)
+    maker.train(epochs=args.epochs, lr=args.lr / 10, bs=args.bs, save_dir="./save/", name="GAN_s_SVHN")
+    #maker.load_model(os.path.join("./save/", "GAN_s.pth"))
+    #maker.eval(9)
     
-    
-    # model inference
-    sample = example_data  # complete the sample here
-    trainer.infer(sample=sample)
     
     
 
