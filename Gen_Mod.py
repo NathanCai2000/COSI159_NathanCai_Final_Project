@@ -43,7 +43,6 @@ class Generator(nn.Module):
         c = self.label_emb(labels)
         x = torch.cat([z, c], 1)
         out = self.model(x)
-        #return out.view(1, 28, 28)
         return out.view(x.size(0), 28, 28)
     
 class RandomNoiseDataset(Dataset):
@@ -77,7 +76,7 @@ class Source_gen:
             loss_track = AverageMeter()
             sample_n = 10000
             criterion = nn.CrossEntropyLoss()
-            dataset = RandomNoiseDataset(size=1000)
+            dataset = RandomNoiseDataset(size=sample_n)
             dataloader = DataLoader(dataset, batch_size=bs, shuffle=True)
             
             print("Start training...")
