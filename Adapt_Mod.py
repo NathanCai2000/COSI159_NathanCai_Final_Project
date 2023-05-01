@@ -48,8 +48,6 @@ class Trainer:
                 data = self.FE(data)
                 output = self._model(data)
                 
-                print(output.size())
-                print(target.size())
                 target = target.squeeze()
                 loss = F.nll_loss(output, target)
                 loss.backward()

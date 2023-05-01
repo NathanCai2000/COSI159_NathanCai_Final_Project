@@ -12,7 +12,7 @@ from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 import numpy as np
-
+import tensorflow as tf
 import matplotlib.pyplot as plt
 
 #from Gen_Mod import Generator
@@ -96,7 +96,7 @@ class GAN:
             "Trains the Generator for the Source Data GAN framework"
             
             criterion = nn.BCELoss()
-            d_optimizer = optim.SGD(params=self.dis.parameters(), lr=0.01)
+            d_optimizer = optim.SGD(params=self.dis.parameters(), lr=lr * 10)
             g_optimizer = optim.SGD(params=self.gen.parameters(), lr=lr)
             
             print("Start training...")

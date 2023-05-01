@@ -12,11 +12,12 @@ import GAN_Mod as GA
 import FE_Mod as FE
 import Adapt_Mod as AP
 import mnist_m as mm
+from scipy import ndimage
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Domain Impression')
-    parser.add_argument('--epochs', type=int, default=10, help="training epochs")
+    parser.add_argument('--epochs', type=int, default=5, help="training epochs")
     parser.add_argument('--lr', type=float, default=1e-1, help="learning rate")
     parser.add_argument('--bs', type=int, default=100, help="batch size")
     args = parser.parse_args()
@@ -48,7 +49,7 @@ def main():
     #maker.train(train_loader=dataloader, epochs=args.epochs, lr=args.lr / 10, bs=args.bs, save_dir="./save/", name="GAN_s_mnist")
 
     maker.load_model(os.path.join("./save/", "GAN_s_mnist.pth"))
-    maker.eval(16, title='Generator Model: Source=MNIST')
+    maker.eval(9, title='Generator Model: Source=MNIST')
 
     
     """Part 2: Target Domain GAN-----------------------------------------------"""
@@ -64,10 +65,10 @@ def main():
     #target_set = torchvision.datasets.MNIST(root='./data/', train=True, download=True, transform=transform)
     
     #MNIST-M
-    target_set = mm.MNISTM(root='./data/', train=True, download=True, transform=transform)
+    #target_set = mm.MNISTM(root='./data/', train=True, download=True, transform=transform)
     
     #SVHN
-    #target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
+    target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
     
     #USPS
     #target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
@@ -80,16 +81,16 @@ def main():
     )
     
     GAN = GA.GAN(source_gen=maker.gen)
-    #GAN.train(train_loader, epochs=args.epochs, lr=args.lr*10, bs=args.bs, save_dir="./save/", name="GAN_t_mnist2mnist_m")
-    GAN.load_model(os.path.join("./save/", "GAN_t_mnist2mnist_m.pth"))
+    GAN.train(train_loader, epochs=args.epochs, lr=args.lr*10, bs=args.bs, save_dir="./save/", name="GAN_t_mnist2svhn")
+    #GAN.load_model(os.path.join("./save/", "GAN_t_mnist2svhn.pth"))
     GAN.eval(16, title='Generator Model: Trained with Targets')
     
     """Part 3: Feature Extractor in Target Domain------------------------------"""
     
     #Create final feature extractor
     Feature = FE.FEDA_Trainer(model=GAN.gen)
-    Feature.train(train_loader, epochs=args.epochs, lr=args.lr*1, bs=args.bs, save_dir="./save/", name="FE_t_mnist2mnist-m")
-    #Feature.load_model(os.path.join("./save/", "FE_t_mnist2mnist-m.pth"))
+    Feature.train(train_loader, epochs=args.epochs, lr=args.lr*1, bs=args.bs, save_dir="./save/", name="FE_t_mnist2svhn")
+    #Feature.load_model(os.path.join("./save/", "FE_t_mnist2svhn.pth"))
     
     """Part 4: Final Classifier Training---------------------------------------"""
     
@@ -113,11 +114,11 @@ def main():
     
     retu_trainer = AP.Trainer(model=retu, fe=Feature.FE)
     
-    # # model training
-    # retu_trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/", name="C_t_mnist-mnist-m")
+    # model training
+    retu_trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/", name="C_t_mnist-svhn")
 
-    # # model evaluation
-    # retu_trainer.eval(test_loader=test_loader)
+    # model evaluation
+    retu_trainer.eval(test_loader=test_loader)
     
 
     return

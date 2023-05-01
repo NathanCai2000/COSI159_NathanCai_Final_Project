@@ -61,7 +61,25 @@ class GenSet(Dataset):
         
         
         
-        
+import tensorflow as tf
+
+def median_filter(input_tensor, filter_size):
+    # Pad the input tensor to handle edges of the image.
+    padding_size = filter_size // 2
+    padded_tensor = tf.pad(input_tensor, [[0, 0], [padding_size, padding_size], [padding_size, padding_size], [0, 0]], 'REFLECT')
+
+    # Create a sliding window of size filter_size x filter_size.
+    kernel = tf.ones([filter_size, filter_size, input_tensor.get_shape().as_list()[-1], 1], dtype=tf.float32)
+
+    # Apply median filtering using the sliding window and the median() function.
+    filtered_tensor = tf.nn.depthwise_conv2d(padded_tensor, kernel, strides=[1, 1, 1, 1], padding='VALID')
+    filtered_tensor = tf.squeeze(filtered_tensor, axis=-1)
+    filtered_tensor = tf.transpose(filtered_tensor, [0, 3, 1, 2])
+    filtered_tensor = tf.map_fn(lambda x: tf.contrib.distributions.percentile(x, 50.0), filtered_tensor, dtype=tf.float32)
+    filtered_tensor = tf.transpose(filtered_tensor, [0, 2, 3, 1])
+
+    return filtered_tensor
+
         
         
         
