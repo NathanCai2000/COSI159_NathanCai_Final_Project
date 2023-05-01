@@ -159,4 +159,11 @@ class FEDA_Trainer():
         print("Training completed, saving model to %s" % save_dir)
         if not os.path.exists(save_dir):
             os.makedirs(save_dir)
-        torch.save(self.gen.state_dict(), os.path.join(save_dir, name + ".pth"))
+        torch.save(self.FE.state_dict(), os.path.join(save_dir, name + ".pth"))
+        
+    def load_model(self, path: str) -> None:
+        """ load model from a .pth file """
+        print("loading Source Generator Model")
+        # loads a model from a .pth file and sets it as the current model
+        self.FE.load_state_dict(torch.load(path))
+        return

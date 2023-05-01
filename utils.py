@@ -36,3 +36,39 @@ class RandomNoiseDataset(Dataset):
         x = self.values[index]
         y = self.labels[index]
         return x, y
+    
+    
+from torch.autograd import Variable
+    
+class GenSet(Dataset):
+    def __init__(self, size, model):
+        super(GenSet, self).__init__()
+        self.gen = model
+        self.size = size 
+        
+    def __len__(self):
+        return self.size
+    
+    def __getitem__(self, index):
+        x = torch.randn(1, 100)
+        y = torch.LongTensor(np.random.randint(0, 10, 1))
+        z = Variable(x)
+        label = Variable(y)
+        
+        output = self.gen(z, label)
+        
+        return output[0], y
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        

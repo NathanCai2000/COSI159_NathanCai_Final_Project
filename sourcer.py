@@ -39,32 +39,31 @@ def main():
         torchvision.transforms.Resize([28, 28]),
         torchvision.transforms.Grayscale(3),
         torchvision.transforms.ToTensor(),
-        torchvision.transforms.Normalize((0.1307,), (0.3081,))
+        #torchvision.transforms.Normalize((0.1307,), (0.3081,))
     ])
     
     #MNIST
-    #target_set = torchvision.datasets.MNIST(root='./data/', train=True, download=True, transform=transform)
-    #target_train = torchvision.datasets.MNIST(root='./data/', train=False, download=True, transform=transform)
+    # target_set = torchvision.datasets.MNIST(root='./data/', train=True, download=True, transform=transform)
+    # target_train = torchvision.datasets.MNIST(root='./data/', train=False, download=True, transform=transform)
+    # name = "mnist"
     
     #MNIST-M
-    #target_set = mm.MNISTM(root='./data/', train=True, download=True, transform=transform)
-    #target_train = mm.MNISTM(root='./data/', train=False, download=True, transform=transform)
+    # target_set = mm.MNISTM(root='./data/', train=True, download=True, transform=transform)
+    # target_train = mm.MNISTM(root='./data/', train=False, download=True, transform=transform)
+    # name = "mnist_m"
+    
     
     #SVHN
-    target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
-    #target_train = torchvision.datasets.SVHN(root='./data/', split='test', download=True, transform=transform)
+    # target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
+    # target_train = torchvision.datasets.SVHN(root='./data/', split='test', download=True, transform=transform)
+    # name = "SVHN"
     
     #USPS
-    #target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
-    #target_train = torchvision.datasets.USPS(root='./data/', train=False, download=True, transform=transform)
+    target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
+    target_train = torchvision.datasets.USPS(root='./data/', train=False, download=True, transform=transform)
+    name = "USPS"
     
-    #Dataloader
-    train_loader = torch.utils.data.DataLoader(
-        target_set,
-        batch_size=args.bs,
-        shuffle=True,
-    )
-    
+    #Dataloader    
     train_loader = torch.utils.data.DataLoader(
         target_set,
         batch_size=args.bs,
@@ -80,7 +79,7 @@ def main():
     trainer = Trainer(model=model_source) 
     
     # model training for source classifier
-    trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr / 10, save_dir="./save/", name="mnist")
+    trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/", name=name)
     
     trainer.eval(test_loader)
     

@@ -20,3 +20,22 @@ class Net(nn.Module):
         x = self.fc2(x)
 
         return F.log_softmax(x)
+
+class Net2(nn.Module):
+    def __init__(self):
+        super(Net2, self).__init__()
+        self.fc1 = nn.Linear(128, 64)
+        self.fc2 = nn.Linear(64, 32)
+        self.fc3 = nn.Linear(32, 10)
+        self.relu = nn.ReLU()
+
+    def forward(self, x):
+        x = x.view(x.size(0), 128)
+        x = self.fc1(x)
+        x = self.relu(x)
+        x = self.fc2(x)
+        x = self.relu(x)
+        x = self.fc3(x)
+        return x
+
+        return F.log_softmax(x)

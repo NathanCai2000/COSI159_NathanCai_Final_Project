@@ -91,7 +91,9 @@ class Source_gen:
                     loss_track.update(loss.item(), n=1)
                     
                 elapse = time.time() - tik
-                print("Epoch: [%d/%d]; Time: %.2f; Loss: %.5f" % (i + 1, epochs, elapse, loss_track.avg))
+                stats = "Epoch: [%d/%d]; Time: %.2f; Loss: %.5f" % (i + 1, epochs, elapse, loss_track.avg)
+                print(stats)
+                self.eval(9, stats)
                 
             print("Training completed, saving model to %s" % save_dir)
             if not os.path.exists(save_dir):
