@@ -24,7 +24,7 @@ class Discriminator(nn.Module):
         self.label_emb = nn.Embedding(10, 10)
         
         self.model = nn.Sequential(
-            nn.Linear(794, 1024),
+            nn.Linear(28*28*3 +10, 1024),
             nn.LeakyReLU(0.2, inplace=True),
             nn.Dropout(0.3),
             nn.Linear(1024, 512),
@@ -38,7 +38,7 @@ class Discriminator(nn.Module):
         )
     
     def forward(self, x, labels):
-        x = x.view(x.size(0), 784)
+        x = x.view(x.size(0), 28*28*3)
         c = self.label_emb(labels)
         x = torch.cat([x, c], 1)
         out = self.model(x)
@@ -53,8 +53,8 @@ class GAN:
         
     def generator_train_step(self, batch_size, discriminator, generator, g_optimizer, criterion):
         g_optimizer.zero_grad()
-        z = Variable(torch.randn(batch_size, 100))
-        fake_labels = Variable(torch.LongTensor(np.random.randint(0, 10, batch_size)))
+        z = Variable(torch.Tensor(np.random.rand(batch_size, 100)).type(torch.LongTensor))
+        fake_labels = Variable(torch.Tensor(np.random.randint(0, 10, batch_size)).type(torch.LongTensor))
         fake_images = generator(z, fake_labels)
         validity = discriminator(fake_images, fake_labels)
         g_loss = criterion(validity, Variable(torch.ones(batch_size)))
@@ -70,8 +70,12 @@ class GAN:
         real_loss = criterion(real_validity, Variable(torch.ones(batch_size)))
         
         # train with fake images
-        z = Variable(torch.randn(batch_size, 100))
-        fake_labels = Variable(torch.LongTensor(np.random.randint(0, 10, batch_size)))
+        z = Variable(torch.Tensor(np.random.rand(batch_size, 100)).type(torch.LongTensor))
+        fake_labels = Variable(torch.Tensor(np.random.randint(0, 10, batch_size)).type(torch.LongTensor))
+        
+        #print(z.size())
+        #print(fake_labels.size())
+        
         fake_images = generator(z, fake_labels)
         fake_validity = discriminator(fake_images, fake_labels)
         fake_loss = criterion(fake_validity, Variable(torch.zeros(batch_size)))
@@ -94,7 +98,6 @@ class GAN:
             criterion = nn.BCELoss()
             d_optimizer = optim.SGD(params=self.dis.parameters(), lr=0.01)
             g_optimizer = optim.SGD(params=self.gen.parameters(), lr=lr)
-
             
             print("Start training...")
             
@@ -105,15 +108,22 @@ class GAN:
                     real_images = Variable(images)
                     labels = Variable(labels)
                     self.gen.train()
+                    self.dis.train()
                     batch_size = real_images.size(0)
-                    d_loss = self.discrimin_train_step(batch_size, self.dis, self.gen, d_optimizer, criterion, real_images, labels)
+                    
+                    #print(labels)
+                    #print(labels.size())
                     
                     g_loss = self.generator_train_step(batch_size, self.dis, self.gen, g_optimizer, criterion)
+                    
+                    d_loss = self.discrimin_train_step(batch_size, self.dis, self.gen, d_optimizer, criterion, real_images, labels)
                 
                 elapse = time.time() - tik
-                print("Epoch: [%d/%d]; Time: %.2f; g_Loss: %.5f; d_loss: %.5f" % (epoch+1, epochs, elapse, g_loss, d_loss))
                 
-                self.eval(9)
+                stats = "Epoch: [%d/%d]; Time: %.2f; g_Loss: %.5f; d_loss: %.5f" % (epoch+1, epochs, elapse, g_loss, d_loss)
+                print(stats)
+                
+                self.eval(9, title=stats)
                 
             print("Training completed, saving model to %s" % save_dir)
             if not os.path.exists(save_dir):
@@ -122,7 +132,7 @@ class GAN:
             
     
         
-    def eval(self, sample_n):
+    def eval(self, sample_n,  title=''):
         """Model testing evaluation: Generates n number of fake samples and displays it."""
         store = int(math.sqrt(sample_n))
         [r, c] = store, store
@@ -133,14 +143,15 @@ class GAN:
             label = Variable(torch.LongTensor(np.random.randint(0, 10, 1)))
             
             output = self.gen(z, label)
-            output = output.permute(1, 2, 0).detach().numpy()
+            output = output[0].permute(1, 2, 0).detach().numpy()
+            output = (output * 255).astype(np.uint8)
             
             plt.subplot(r,c, a+1)
             plt.tight_layout()
             plt.imshow(output, cmap='gray')
             plt.title("Prediction: {}".format(label.item()))
-            
-        fig
+        plt.suptitle(title)
+        plt.show()
         
     def load_model(self, path: str) -> None:
         """ load model from a .pth file """

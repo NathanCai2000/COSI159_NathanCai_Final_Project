@@ -17,4 +17,22 @@ class AverageMeter:
         if self.count > 0:
             self.avg = self.sum / self.count
             
-    
+import torch
+from torch.utils.data import Dataset
+import numpy as np
+
+
+class RandomNoiseDataset(Dataset):
+    def __init__(self, size):
+        super(RandomNoiseDataset, self).__init__()
+        self.values = torch.Tensor(np.random.rand(size, 100)).type(torch.LongTensor) #Random 100 element long noise vector
+        self.labels = torch.Tensor(np.random.randint(0, 10, size)).type(torch.LongTensor) #Random label from 1-10
+        self.size = size
+
+    def __len__(self):
+        return self.size
+
+    def __getitem__(self, index):
+        x = self.values[index]
+        y = self.labels[index]
+        return x, y

@@ -10,7 +10,7 @@ import os
 import torch
 from torch import optim
 import torch.nn as nn
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader
 from torch.autograd import Variable
 
 import numpy as np
@@ -34,7 +34,7 @@ class Generator(nn.Module):
             #nn.Linear(512, 784),
             nn.Linear(512, 1024),
             nn.LeakyReLU(0.2, inplace=True),
-            nn.Linear(1024, 784),
+            nn.Linear(1024, 784 *3),
             nn.Tanh()
         )
     
@@ -43,28 +43,16 @@ class Generator(nn.Module):
         c = self.label_emb(labels)
         x = torch.cat([z, c], 1)
         out = self.model(x)
-        return out.view(x.size(0), 28, 28)
-    
-class RandomNoiseDataset(Dataset):
-    def __init__(self, size):
-        self.size = size
-
-    def __len__(self):
-        return self.size
-
-    def __getitem__(self, idx):
-        x = torch.randn(1, 100) # Generate a random 10x10 image
-        y = torch.randint(0, 10, (1,)) # Generate a random label
-        return x, y
+        return out.view(z.size(0), 3, 28, 28)
 
 class Source_gen:
-    
     
     def __init__(self, source_model: nn.modules):
         self.gen = Generator()
         self.source = source_model
 
     def train(self,
+        train_loader: DataLoader,
         epochs: int,
         lr: float,
         bs: int,
@@ -74,29 +62,25 @@ class Source_gen:
             "Trains the Generator for the Source Data GAN framework"
             optimizer = optim.SGD(params=self.gen.parameters(), lr=lr)
             loss_track = AverageMeter()
-            sample_n = 10000
             criterion = nn.CrossEntropyLoss()
-            dataset = RandomNoiseDataset(size=sample_n)
-            dataloader = DataLoader(dataset, batch_size=bs, shuffle=True)
+
             
+            self.gen.train()
             print("Start training...")
             for i in range(epochs):
                 tik = time.time()
                 loss_track.reset()
                 #for a in range(sample_n):
-                for a in range(len(dataset)):
+                for data, label in train_loader:
                     
                     optimizer.zero_grad()
-                    #z = Variable(torch.randn(1, 100))
-                    #label = Variable(torch.LongTensor(np.random.randint(0, 10, 1)))
-                    x, y = dataset[a]
-                    z = Variable(x)
-                    label = Variable(y)
+                    z = Variable(data)
+                    label = Variable(label)
                     generated_image = self.gen(z, label)
                     output = self.source(generated_image)
 
                     #loss_CEL = criterion(output, label)
-                    loss_CEL = criterion(output, y)
+                    loss_CEL = criterion(output, label)
 
                     loss_LSE = torch.logsumexp(output, 1)
                     loss = loss_LSE + loss_CEL
@@ -116,24 +100,28 @@ class Source_gen:
         
             return
     
-    def eval(self, sample_n):
+    def eval(self, sample_n, title=''):
         """Model testing evaluation: Generates n number of fake samples and displays it."""
         store = int(math.sqrt(sample_n))
         [r, c] = store, store
         
-        fig = plt.figure()
+        plt.figure()
         for a in range(sample_n):
             z = Variable(torch.randn(1, 100))
             label = Variable(torch.LongTensor(np.random.randint(0, 10, 1)))
             
             output = self.gen(z, label)
-            output = output.permute(1, 2, 0).detach().numpy()
+                        
+            output = output[0].permute(1, 2, 0).detach().numpy()
+            
+            output = (output * 255).astype(np.uint8)
             
             plt.subplot(r,c, a+1)
             plt.tight_layout()
-            plt.imshow(output, cmap='gray')
+            plt.imshow(output)
             plt.title("Prediction: {}".format(label.item()))
-        fig
+        plt.suptitle(title)
+        plt.show()
             
     def load_model(self, path: str) -> None:
         """ load model from a .pth file """
