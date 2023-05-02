@@ -54,14 +54,14 @@ def main():
     
     
     #SVHN
-    # target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
-    # target_train = torchvision.datasets.SVHN(root='./data/', split='test', download=True, transform=transform)
-    # name = "SVHN"
+    target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
+    target_train = torchvision.datasets.SVHN(root='./data/', split='test', download=True, transform=transform)
+    name = "SVHN"
     
     #USPS
-    target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
-    target_train = torchvision.datasets.USPS(root='./data/', train=False, download=True, transform=transform)
-    name = "USPS"
+    # target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
+    # target_train = torchvision.datasets.USPS(root='./data/', train=False, download=True, transform=transform)
+    # name = "USPS"
     
     #Dataloader    
     train_loader = torch.utils.data.DataLoader(

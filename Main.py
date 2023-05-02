@@ -68,10 +68,10 @@ def main():
     #target_set = mm.MNISTM(root='./data/', train=True, download=True, transform=transform)
     
     #SVHN
-    target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
+    #target_set = torchvision.datasets.SVHN(root='./data/', split='train', download=True, transform=transform)
     
     #USPS
-    #target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
+    target_set = torchvision.datasets.USPS(root='./data/', train=True, download=True, transform=transform)
     
     #MNIST-M
     train_loader = torch.utils.data.DataLoader(
@@ -81,16 +81,16 @@ def main():
     )
     
     GAN = GA.GAN(source_gen=maker.gen)
-    GAN.train(train_loader, epochs=args.epochs, lr=args.lr*10, bs=args.bs, save_dir="./save/", name="GAN_t_mnist2svhn")
-    #GAN.load_model(os.path.join("./save/", "GAN_t_mnist2svhn.pth"))
+    #GAN.train(train_loader, epochs=args.epochs, lr=args.lr*10, bs=args.bs, save_dir="./save/", name="GAN_t_mnist2usps")
+    GAN.load_model(os.path.join("./save/", "GAN_t_mnist2usps.pth"))
     GAN.eval(16, title='Generator Model: Trained with Targets')
     
     """Part 3: Feature Extractor in Target Domain------------------------------"""
     
     #Create final feature extractor
     Feature = FE.FEDA_Trainer(model=GAN.gen)
-    Feature.train(train_loader, epochs=args.epochs, lr=args.lr*1, bs=args.bs, save_dir="./save/", name="FE_t_mnist2svhn")
-    #Feature.load_model(os.path.join("./save/", "FE_t_mnist2svhn.pth"))
+    #Feature.train(train_loader, epochs=args.epochs, lr=args.lr*1, bs=args.bs, save_dir="./save/", name="FE_t_mnist2usps")
+    Feature.load_model(os.path.join("./save/", "FE_t_mnist2usps.pth"))
     
     """Part 4: Final Classifier Training---------------------------------------"""
     
@@ -115,10 +115,10 @@ def main():
     retu_trainer = AP.Trainer(model=retu, fe=Feature.FE)
     
     # model training
-    retu_trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/", name="C_t_mnist-svhn")
+    #retu_trainer.train(train_loader=train_loader, epochs=args.epochs, lr=args.lr, save_dir="./save/", name="C_t_mnist-usps")
 
     # model evaluation
-    retu_trainer.eval(test_loader=test_loader)
+    #retu_trainer.eval(test_loader=test_loader)
     
 
     return
